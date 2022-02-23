@@ -14,7 +14,6 @@ void RickRollAction::perform() {
         delay(500);
         Serial.println("...");
     }
-    WiFi.lowPowerMode();
     Serial.print("WiFi connected with IP: ");
     Serial.println(WiFi.localIP());
     WiFiClient client;
@@ -25,7 +24,6 @@ void RickRollAction::perform() {
     serializeJson(message, output);
     client.println(output);
     client.stop();
-    WiFi.end();
 }
 
 DebugAction::DebugAction(SecretDisplay* secret_display) {
