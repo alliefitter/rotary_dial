@@ -1,7 +1,5 @@
 #include <dial.h>
 #include "Arduino.h"
-#include <ArduinoJson.h>
-#include <WiFi.h>
 
 
 
@@ -31,33 +29,3 @@ int Dial::read_dial(bool is_dialing) {
     // }
     return pulse_count;
 }
-
-void Dial::send_pulse(int count) {
-    Serial.print("START PULSE: ");
-    Serial.println(millis());
-    Serial.println("PULSE");
-    WiFiClient client;
-    client.connect("192.168.0.205", 8080);
-    DynamicJsonDocument message(2048);
-    String output;
-    message["action"] = "PULSE";
-    message["count"] = count;
-    serializeJson(message, output);
-    client.println(output);
-    client.stop();
-    Serial.print("END PULSE: ");
-    Serial.println(millis());
-}
-
-void Dial::send_dialed_number(int number) {
-    WiFiClient client;
-    client.connect("192.168.0.205", 8080);
-    DynamicJsonDocument message(2048);
-    String output;
-    message["action"] = "DIALED_NUMBER";
-    message["dialed_number"] = number == 10 ? 0 : number;
-    serializeJson(message, output);
-    client.println(output);
-    client.stop();
-}
-

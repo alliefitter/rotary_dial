@@ -13,6 +13,7 @@ public:
     void clear();
     void show_next();
     bool should_show();
+    void show_phones();
 private:
     bool is_enabled;
     unsigned long last_show_time;
