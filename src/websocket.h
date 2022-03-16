@@ -1,24 +1,23 @@
+#ifndef websocket_h
+#define websocket_h
 
-#pragma once
-#include <ArduinoJson.h>
-#include <Hash.h>
 #include <WebSocketsClient.h>
-#ifndef Websocket_h
-#define Wedsocket_h
+#include <ArduinoJson.h>
 
-class WebsocketHandler {
-public:
-    WebsocketHandler(WebSocketsClient client);
-    bool has_data();
-    DynamicJsonDocument get_json();
-    void loop();
-    void handler(WStype_t type, uint8_t* payload, size_t length);
-    void connect();
-private:
-    void send_request();
-    WebSocketsClient client;
-    DynamicJsonDocument json;
-    int id_counter;
-};
+typedef void (*WsConnectType)();
+typedef void (*AppendRequestType)(DynamicJsonDocument);
+
+extern uint16_t ws_id_counter;
+static WebSocketsClient ws_client;
+static std::vector<DynamicJsonDocument> requests;
+void init_ws_id();
+bool should_authorize(const DynamicJsonDocument json_response);
+void authorize();
+void append_request(DynamicJsonDocument json);
+bool has_request();
+void send_request();
+void ws_handler(const WStype_t type, const uint8_t* payload, const size_t length);
+void ws_connect();
+void ws_loop();
 
 #endif

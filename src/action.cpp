@@ -1,86 +1,128 @@
 #include "Arduino.h"
 #include <action.h>
 
-DebugAction::DebugAction(SecretDisplay* secret_display) {
-    display = secret_display;
-}
+DebugAction::DebugAction(AppendRequestType append_request, WsConnectType connect) 
+: append_request(append_request), 
+  connect(connect), 
+  is_active(false) {}
 
-bool DebugAction::is_number_dialed(char* dialed_number) {
-    return strcmp(dialed_number, "00") == 0;
+bool DebugAction::is_number_dialed(const std::string dialed_number) {
+    if (dialed_number == "00") {
+        is_active = !is_active;
+    }
+    this->dialed_number = dialed_number;
+    
+    return is_active;
 }
 
 void DebugAction::perform() {
-    if (display->get_is_enabled()) {
-        display->disable();
-    }
-    else {
-        display->enable();
-    }
-    display->clear();
-    display->show_phones();
-    delay(50);
-    display->clear();
+    DynamicJsonDocument json(1024);
+    json["type"] = "call_service";
+    json["domain"] = "notify";
+    json["service"] = "mobile_app_pixel_5";
+    json["service_data"]["message"] = this->dialed_number;
+    append_request(json);
+    connect();
 }
 
-WakeAction::WakeAction(DynamicJsonDocument* json, WsConnectType connect) : json(json), connect(connect) {}
+WakeAction::WakeAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
 
-bool WakeAction::is_number_dialed(char* dialed_number) {
-    return strcmp(dialed_number, "9253") == 0;
+bool WakeAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  "9253";
 }
 
 void WakeAction::perform() {
-    (*json)["type"] = "fire_event";
-    (*json)["event_type"] = "wake";
+    DynamicJsonDocument json(1024);
+    json["type"] = "fire_event";
+    json["event_type"] = "wake";
+    append_request(json);
     connect();
 }
 
-BedAction::BedAction(DynamicJsonDocument* json, WsConnectType connect) : json(json), connect(connect) {}
+CoolAction::CoolAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
 
-bool BedAction::is_number_dialed(char* dialed_number) {
-    return strcmp(dialed_number, "233") == 0;
+bool CoolAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  "2665";
+}
+
+void CoolAction::perform() {
+    DynamicJsonDocument json(1024);
+    json["type"] = "fire_event";
+    json["event_type"] = "cool";
+    append_request(json);
+    connect();
+}
+
+BedAction::BedAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
+
+bool BedAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  "233";
 }
 
 void BedAction::perform() {
-    (*json)["type"] = "fire_event";
-    (*json)["event_type"] = "bed_time";
+    DynamicJsonDocument json(1024);
+    json["type"] = "fire_event";
+    json["event_type"] = "bed_time";
+    append_request(json);
     connect();
 }
 
-HeatAction::HeatAction(DynamicJsonDocument* json, WsConnectType connect) : json(json), connect(connect) {}
+HeatAction::HeatAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
 
-bool HeatAction::is_number_dialed(char* dialed_number) {
-    return strcmp(dialed_number, "4328") == 0;
+bool HeatAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  "4328";
 }
 
 void HeatAction::perform() {
-    (*json)["type"] = "fire_event";
-    (*json)["event_type"] = "heat";
+    DynamicJsonDocument json(1024);
+    json["type"] = "fire_event";
+    json["event_type"] = "heat";
+    append_request(json);
     connect();
 }
 
-StereoAction::StereoAction(DynamicJsonDocument* json, WsConnectType connect) : json(json), connect(connect) {}
+StereoAction::StereoAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
 
-bool StereoAction::is_number_dialed(char* dialed_number) {
-    return strcmp(dialed_number, "7529") == 0;
+bool StereoAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  "7529";
 }
 
 void StereoAction::perform() {
-    (*json)["type"] = "call_service";
-    (*json)["domain"] = "script";
-    (*json)["service"] = "play_record";
+    DynamicJsonDocument json(1024);
+    json["type"] = "call_service";
+    json["domain"] = "script";
+    json["service"] = "play_record";
+    append_request(json);
     connect();
 }
 
-OfficeLightsAction::OfficeLightsAction(DynamicJsonDocument* json, WsConnectType connect) : json(json), connect(connect) {}
+OfficeLightsAction::OfficeLightsAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
 
-bool OfficeLightsAction::is_number_dialed(char* dialed_number) {
-    return strcmp(dialed_number, "540") == 0;
+bool OfficeLightsAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  "546";
 }
 
 void OfficeLightsAction::perform() {
-    (*json)["type"] = "call_service";
-    (*json)["domain"] = "light";
-    (*json)["service"] = "toggle";
-    (*json)["target"]["entity_id"] = "light.office_lights";
+    DynamicJsonDocument json(1024);
+    json["type"] = "call_service";
+    json["domain"] = "light";
+    json["service"] = "toggle";
+    json["target"]["entity_id"] = "light.office_lights";
+    append_request(json);
+    connect();
+}
+
+RickRollAction::RickRollAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
+
+bool RickRollAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  "911";
+}
+
+void RickRollAction::perform() {
+    DynamicJsonDocument json(1024);
+    json["type"] = "call_service";
+    json["domain"] = "script";
+    json["service"] = "rick_roll";
+    append_request(json);
     connect();
 }
