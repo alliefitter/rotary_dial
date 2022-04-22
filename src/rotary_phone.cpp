@@ -9,7 +9,8 @@ RotaryPhone::RotaryPhone(
 ) : dial_active_pin(dial_active_pin),
     pulse_pin(pulse_pin),
     hook_pin(hook_pin),
-    actions(actions) 
+    actions(actions),
+    was_digit_appended(false)
 {
     last_dial = millis();
 }
@@ -61,11 +62,15 @@ void RotaryPhone::append_digit(const int digit) {
         char dialed_digit[11];
         sprintf(dialed_digit, "%d", digit == 10 ? 0 : digit);
         dialed_number.append(dialed_digit);
+        was_digit_appended = true;
     }
 }
 
 bool RotaryPhone::should_iterate_actions() {
-    return dialed_number.length() > 0 && millis() - last_dial > 500;
+    bool should_iterate = dialed_number.length() > 0 && was_digit_appended && millis() - last_dial > 500;
+    was_digit_appended = false;
+    
+    return should_iterate;
 }
 
 void RotaryPhone::iterate_actions() {

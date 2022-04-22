@@ -1,4 +1,5 @@
 #include "Arduino.h"
+#include <dial.h>
 #include <action.h>
 #include <Hash.h>
 #include <websocket.h>

@@ -26,6 +26,7 @@ private:
     int pulse_pin;
     int hook_pin;
     std::string dialed_number;
+    bool was_digit_appended;
     unsigned long last_dial;
     HookStatus hook_status;
     std::vector<Action*> actions;
