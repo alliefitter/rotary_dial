@@ -1,16 +1,18 @@
 #ifndef sleeper_h
 #define sleeper_h
+#include <WiFi.h>
 
 class Sleeper {
 public:
-    Sleeper(int interupt_pin);
+    Sleeper(gpio_num_t hook_pin);
     void reset();
-    bool should_sleep();
+    bool should_sleep() const;
     void nighttime();
 private:
     unsigned long time_elapsed;
     bool sleep_active;
-    int interupt_pin;
 };
+
+void sleep_loop(Sleeper* sleeper, bool is_dial_active, bool is_ringing);
 
 #endif

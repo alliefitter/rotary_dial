@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include <websocket.h>
 
 uint16_t ws_id_counter;
@@ -6,7 +7,7 @@ void init_ws_id() {
     ws_id_counter = 1;
 }
 
-void append_request(DynamicJsonDocument request) {
+void append_request(const DynamicJsonDocument& request) {
     requests.push_back(request);
 }
 
@@ -33,7 +34,7 @@ void send_request() {
     }
 }
 
-bool should_authorize(const DynamicJsonDocument json_response) {
+bool should_authorize(const DynamicJsonDocument& json_response) {
     return json_response["type"] == "auth_required";
 }
 
@@ -50,7 +51,8 @@ void ws_handler(const WStype_t type, const uint8_t* payload, const size_t length
     switch (type) {
         case WStype_DISCONNECTED: {
             ws_client.setReconnectInterval(86400 * 1000);
-            Serial.println("Diconnected from websockect");
+            Serial.println("Disconnected from websocket");
+            digitalWrite(LED_BUILTIN, LOW);
         }
             break;
         
@@ -90,12 +92,11 @@ void ws_handler(const WStype_t type, const uint8_t* payload, const size_t length
 
 void ws_connect() {
     if (!ws_client.isConnected()) {
-        digitalWrite(LED_BUILTIN, LOW);
+        digitalWrite(LED_BUILTIN, HIGH);
         Serial.println("Connecting Websocket...");
         ws_client.onEvent(ws_handler);
         ws_client.setReconnectInterval(500);
-        ws_client.begin("homeassistant.local", 8123, "/api/websocket");
-        digitalWrite(LED_BUILTIN, HIGH);
+        ws_client.begin("192.168.50.29", 8123, "/api/websocket");
     }
 }
 

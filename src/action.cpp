@@ -1,5 +1,18 @@
 #include "Arduino.h"
 #include <action.h>
+#include <wifi.h>
+
+#include <utility>
+
+void BaseAction::wait_on_wifi() {
+    unsigned long start_time = millis();
+    while (!is_wifi_connected()) {
+        if (millis() - start_time > 10000) {
+            Serial.println("Wait on WiFi time out!");
+            break;
+        } 
+    }
+}
 
 DebugAction::DebugAction(AppendRequestType append_request, WsConnectType connect) 
 : append_request(append_request), 
@@ -10,17 +23,18 @@ bool DebugAction::is_number_dialed(const std::string dialed_number) {
     if (dialed_number == "00") {
         is_active = !is_active;
     }
-    this->dialed_number = dialed_number;
+    this->current_dialed_number = dialed_number;
     
     return is_active;
 }
 
 void DebugAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "call_service";
     json["domain"] = "notify";
     json["service"] = "mobile_app_pixel_5";
-    json["service_data"]["message"] = this->dialed_number;
+    json["service_data"]["message"] = this->current_dialed_number;
     append_request(json);
     connect();
 }
@@ -32,6 +46,7 @@ bool WakeAction::is_number_dialed(const std::string dialed_number) {
 }
 
 void WakeAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "fire_event";
     json["event_type"] = "wake";
@@ -46,6 +61,7 @@ bool CoolAction::is_number_dialed(const std::string dialed_number) {
 }
 
 void CoolAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "fire_event";
     json["event_type"] = "cool";
@@ -60,6 +76,7 @@ bool BedAction::is_number_dialed(const std::string dialed_number) {
 }
 
 void BedAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "fire_event";
     json["event_type"] = "bed_time";
@@ -74,6 +91,7 @@ bool HeatAction::is_number_dialed(const std::string dialed_number) {
 }
 
 void HeatAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "fire_event";
     json["event_type"] = "heat";
@@ -88,6 +106,7 @@ bool StereoAction::is_number_dialed(const std::string dialed_number) {
 }
 
 void StereoAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "call_service";
     json["domain"] = "script";
@@ -96,18 +115,25 @@ void StereoAction::perform() {
     connect();
 }
 
-OfficeLightsAction::OfficeLightsAction(AppendRequestType append_request, WsConnectType connect) : append_request(append_request), connect(connect) {}
+ToggleLightsAction::ToggleLightsAction(
+    AppendRequestType append_request,
+    WsConnectType connect,
+    std::string  entity_id,
+    std::string  trigger_number
 
-bool OfficeLightsAction::is_number_dialed(const std::string dialed_number) {
-    return dialed_number ==  "546";
+) : append_request(append_request), connect(connect), entity_id(std::move(entity_id)), trigger_number(std::move(trigger_number)) {}
+
+bool ToggleLightsAction::is_number_dialed(const std::string dialed_number) {
+    return dialed_number ==  trigger_number;
 }
 
-void OfficeLightsAction::perform() {
+void ToggleLightsAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "call_service";
     json["domain"] = "light";
     json["service"] = "toggle";
-    json["target"]["entity_id"] = "light.office_lights";
+    json["target"]["entity_id"] = entity_id;
     append_request(json);
     connect();
 }
@@ -119,6 +145,7 @@ bool RickRollAction::is_number_dialed(const std::string dialed_number) {
 }
 
 void RickRollAction::perform() {
+    wait_on_wifi();
     DynamicJsonDocument json(1024);
     json["type"] = "call_service";
     json["domain"] = "script";

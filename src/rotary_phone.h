@@ -2,16 +2,17 @@
 #define rotary_phone_h
 
 #include <action.h>
-#include <ESP8266WiFi.h>
+#include "sleeper.h"
 
 enum HookStatus {ON, OFF};
+enum DialStatus {ACTIVE, INACTIVE};
 
 class RotaryPhone {
 public:
     RotaryPhone(
-        const int dial_active_pin, 
-        const int pulse_pin, 
-        const int hook_pin, 
+        gpio_num_t dial_active_pin,
+        gpio_num_t pulse_pin,
+        gpio_num_t hook_pin,
         std::vector<Action*> actions
     );
     bool is_dialing();
@@ -22,15 +23,17 @@ public:
     bool should_iterate_actions();
     void iterate_actions();
 private:
-    int dial_active_pin;
-    int pulse_pin;
-    int hook_pin;
+    gpio_num_t dial_active_pin;
+    gpio_num_t pulse_pin;
+    gpio_num_t hook_pin;
     std::string dialed_number;
     bool was_digit_appended;
     unsigned long last_dial;
     HookStatus hook_status;
     std::vector<Action*> actions;
-    void append_digit(const int digit);
+    void append_digit(int digit);
 };
+
+DialStatus rotary_dial_loop(RotaryPhone* phone);
 
 #endif
